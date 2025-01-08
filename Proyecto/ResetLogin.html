@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reseteo de Contraseña</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Reseteo de Contraseña</h1>
+        <form id="reset-password-form">
+            <input type="text" id="usuario" name="usuario" placeholder="Ingresa tu nombre de usuario" required>
+            <input type="text" id="color_favorito" name="color_favorito" placeholder="Ingresa tu color favorito" required>
+            <button type="submit">Validar</button>
+        </form>
+        <a href="login.html" class="back-to-login">Volver al inicio de sesión</a>
+    </div>
+
+    <script>
+        document.getElementById('reset-password-form').onsubmit = function(event) {
+            event.preventDefault();
+            const usuario = document.getElementById('usuario').value.trim();
+            const colorFavorito = document.getElementById('color_favorito').value.trim();
+            const mensaje = document.getElementById('mensaje');
+            
+            const xhr = new XMLHttpRequest();
+            xhr.open("POST", "http://localhost/Proyecto/validarcolor.php", true);
+            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+            xhr.onload = function () {
+                if (xhr.status === 200) {
+                    const response = JSON.parse(xhr.responseText);
+                    if (response.status === "success") {
+                        window.location.href = 'newpassword.html';
+                    } else {
+                        alert(response.message || 'Usuario o color incorrecto. Intenta de nuevo.');
+                    }
+                } else {
+                    alert('Error al comunicarse con el servidor.');
+                }
+            };
+
+            const params = `usuario=${encodeURIComponent(usuario)}&color_favorito=${encodeURIComponent(colorFavorito)}`;
+            xhr.send(params);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Productos Disponibles</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: url('fondo.jpg') no-repeat center center fixed;
+            background-size: cover;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+        .header {
+            width: 80%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            box-sizing: border-box;
+        }
+        .boton-crear {
+            background-color: #8B4513;
+            color: white;
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .boton-crear:hover {
+            background-color: #6A2C0F;
+        }
+        h1 {
+            color:  #897979;
+            margin: 0;
+        }
+        .productos {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            width: 80%;
+            margin: 20px auto;
+        }
+        .producto {
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        .producto img {
+            width: 100%;
+            height: 450px;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+        .producto h3 {
+            margin: 10px 0;
+        }
+        .producto p {
+            font-size: 1.1em;
+            color: #555;
+        }
+        .stock {
+            font-weight: bold;
+            color: #28a745;
+        }
+        .stock.bajo {
+            color: #d9534f;
+        }
+        .stock-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 10px;
+        }
+        .stock-btn {
+            background-color: #8B4513;
+            color: white;
+            border: none;
+            padding: 5px 15px;
+            font-size: 18px;
+            cursor: pointer;
+            border-radius: 5px;
+            margin: 0 10px;
+        }
+        .stock-btn:hover {
+            background-color: #6A2C0F;
+        }
+        .modificar-btn {
+            margin-top: 10px;
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .modificar-btn:hover {
+            background-color: #388E3C;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            padding-top: 100px;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        .modal-content {
+            background-color: #fff;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 40%;
+            border-radius: 10px;
+        }
+        .cerrar {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .cerrar:hover,
+        .cerrar:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .form-input {
+            margin: 10px 0;
+            display: flex;
+            flex-direction: column;
+        }
+        .boton-volver-login {
+            background-color: #c1a534;
+            color: white;
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .boton-volver-login:hover {
+            background-color: #b8d225;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>CHEIN              </h1>
+        <a href="crear_producto.html" class="boton-crear">Crear Nuevo Producto</a>
+      
+        <button class="boton-volver-login" onclick="volverALogin()">Volver a Login</button>
+    </div>
+    
+    <div class="productos" id="productos-container">
+      
+    </div>
+
+    <div id="modalModificar" class="modal">
+        <div class="modal-content">
+            <span class="cerrar" onclick="cerrarModal()">&times;</span>
+            <h2>Modificar Producto</h2>
+            <form id="formModificar">
+                <input type="hidden" id="productoId">
+                <div class="form-input">
+                    <label for="nuevoNombre">Nombre:</label>
+                    <input type="text" id="nuevoNombre" required>
+                </div>
+                <div class="form-input">
+                    <label for="nuevaDescripcion">Descripción:</label>
+                    <textarea id="nuevaDescripcion" required></textarea>
+                </div>
+                <div class="form-input">
+                    <label for="nuevoPrecio">Precio:</label>
+                    <input type="number" id="nuevoPrecio" required>
+                </div>
+                <button type="submit" class="modificar-btn">Guardar Cambios</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function cargarProductos() {
+            fetch('productos.php')
+                .then(response => response.json())
+                .then(data => {
+                    const productosContainer = document.getElementById('productos-container');
+                    productosContainer.innerHTML = '';
+                    
+                    data.forEach(producto => {
+                        const productoDiv = document.createElement('div');
+                        productoDiv.classList.add('producto');
+                        
+                        const stockClass = producto.stock < 5 ? 'stock bajo' : 'stock';
+                        
+                        productoDiv.innerHTML = `
+                            <img src="Fotos/${producto.id}.jpg" alt="${producto.nombre}">
+                            <h3>${producto.nombre}</h3>
+                            <p>${producto.descripcion}</p>
+                            <p><strong>Precio:</strong> $${producto.precio}</p>
+                            <p class="${stockClass}" id="stock-${producto.id}">Stock: ${producto.stock}</p>
+                            <div class="stock-controls">
+                                <button class="stock-btn" onclick="actualizarStock(${producto.id}, -1)">-</button>
+                                <button class="stock-btn" onclick="actualizarStock(${producto.id}, 1)">+</button>
+                            </div>
+                            <button class="modificar-btn" onclick="abrirModal(${producto.id}, '${producto.nombre}', '${producto.descripcion}', ${producto.precio})">Modificar Producto</button>
+                        `;
+                        productosContainer.appendChild(productoDiv);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error al cargar los productos:', error);
+                    alert('Hubo un problema al cargar los productos.');
+                });
+        }
+
+        function actualizarStock(id, cambio) {
+            fetch('actualizar_stock.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ id, cambio })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const stockElemento = document.getElementById(`stock-${id}`);
+                    const nuevoStock = data.nuevo_stock;
+                    stockElemento.textContent = `Stock: ${nuevoStock}`;
+                    stockElemento.className = nuevoStock < 5 ? 'stock bajo' : 'stock';
+                } else {
+                    alert('No se pudo actualizar el stock.');
+                }
+            })
+            .catch(error => {
+                console.error('Error al actualizar stock:', error);
+            });
+        }
+
+        function abrirModal(id, nombre, descripcion, precio) {
+            document.getElementById('modalModificar').style.display = 'block';
+            document.getElementById('productoId').value = id;
+            document.getElementById('nuevoNombre').value = nombre;
+            document.getElementById('nuevaDescripcion').value = descripcion;
+            document.getElementById('nuevoPrecio').value = precio;
+        }
+
+        function cerrarModal() {
+            document.getElementById('modalModificar').style.display = 'none';
+        }
+
+        document.getElementById('formModificar').onsubmit = function(e) {
+            e.preventDefault();
+            
+            const id = document.getElementById('productoId').value;
+            const nombre = document.getElementById('nuevoNombre').value;
+            const descripcion = document.getElementById('nuevaDescripcion').value;
+            const precio = document.getElementById('nuevoPrecio').value;
+
+            fetch('modificar_producto.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ id, nombre, descripcion, precio })
+            }).then(response => response.json())
+              .then(data => {
+                  if (data.success) {
+                      alert('Producto modificado con éxito');
+                      cerrarModal();
+                      cargarProductos();
+                  } else {
+                      alert('Error al modificar el producto');
+                  }
+              });
+        };
+
+        function volverALogin() {
+            window.location.href = 'login.html'; 
+        }
+
+       
+        window.onload = cargarProductos;
+    </script>
+
+</body>
+</html>

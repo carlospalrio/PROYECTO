@@ -1,0 +1,83 @@
+    <!DOCTYPE html>
+    <html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Registrar Usuario</title>
+        <link rel="stylesheet" href="styles.css">
+        <script>
+            function registrarUsuario(event) {
+                event.preventDefault(); // 
+
+                const usuario = document.getElementById("usuario").value.trim();
+                const contrasena = document.getElementById("contrasena").value.trim();
+                const color_favorito = document.getElementById("color_favorito").value.trim();
+                const mensaje = document.getElementById("mensaje");
+
+            
+                if (!usuario || !contrasena) {
+                    mensaje.textContent = "Por favor, completa todos los campos.";
+                    mensaje.style.color = "red";
+                    return;
+                }
+
+                // Enviar datos mediante AJAX
+                const xhr = new XMLHttpRequest();
+                xhr.open("POST", "http://localhost/Proyecto/register.php", true);
+                xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+                xhr.onload = function () {
+                    if (xhr.status === 200) {
+                  
+                        const parser = new DOMParser();
+                        const xmlDoc = parser.parseFromString(xhr.responseText, "application/xml");
+
+                        var status = xmlDoc.getElementsByTagName('status')[0].childNodes[0].nodeValue;
+                        const message = xmlDoc.querySelector("message")?.textContent;
+
+                        if (status === "success") {
+                            mensaje.textContent = message || "Usuario creado correctamente.";
+                            mensaje.style.color = "yellow";
+                            console.log(status)
+                            document.getElementById("register-form").reset();
+                        } else {
+                            mensaje.textContent = message || "Ocurrió un error.";
+                            console.log(status)
+                            mensaje.style.color = "red";
+                        }
+                    } else {
+                        mensaje.textContent = "Error al comunicarse con el servidor.";
+                        mensaje.style.color = "red";
+                    }
+                };  
+
+                
+
+                const params = `id=${encodeURIComponent(usuario)}&contrasena=${encodeURIComponent(contrasena)}&color_favorito=${encodeURIComponent(color_favorito)}`;
+                xhr.send(params);
+            }
+        </script>
+    </head>
+    <body>
+        <div class="form-container">
+            <h1>Registrar Usuario</h1>
+            <form id="register-form" onsubmit="registrarUsuario(event)">
+                <div class="form-group">
+                    <label for="usuario">Usuario</label>
+                    <input type="text" id="usuario" name="id" placeholder="Ingresa tu usuario (máximo 10 caracteres)" maxlength="10" required>
+                </div>
+                <div class="form-group">
+                    <label for="contrasena">Contraseña</label>
+                    <input type="password" id="contrasena" name="contrasena" placeholder="Ingresa tu contraseña (máximo 10 caracteres)" maxlength="10" required>
+                </div>
+                <div class="form-group">
+                    <label for="color_favorito">Color Favorito</label>
+                    <input type="text" id="color_favorito" name="color_favorito" placeholder="Ingresa tu color Favorito (máximo 10 caracteres)" maxlength="10" required>
+                </div>
+                <button type="submit" class="btn">Registrar Usuario</button>
+            </form>
+            <p id="mensaje" class="mensaje"></p>
+            <a href="login.html" class="btn-back">Volver a Iniciar Sesión</a>
+        </div>
+    </body>
+    </html>
