@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Chein</string>
+    <string name="login_title">Login</string>
+    <string name="product_list_title">Product List</string>
+    <string name="login_button">Login</string>
+    <string name="recover_password">Forgot Password?</string>
+</resources>
